@@ -26,6 +26,7 @@ import net.ymate.platform.webmvc.WebMVC;
 import net.ymate.platform.webmvc.base.Type;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -37,7 +38,6 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -124,12 +124,18 @@ public class WebProxy implements IModule, IWebProxy {
 
     @SuppressWarnings("unchecked")
     public void transmission(HttpServletRequest request, HttpServletResponse response, String url, Type.HttpMethod method) throws Exception {
+        StopWatch _consumeTime = null;
+        long _threadId = 0;
+        if (_LOG.isDebugEnabled()) {
+            _consumeTime = new StopWatch();
+            _consumeTime.start();
+            _threadId = Thread.currentThread().getId();
+            _LOG.debug("-------------------------------------------------");
+            _LOG.debug("--> [" + _threadId + "] URL: " + url);
+        }
+        //
         HttpURLConnection _conn = null;
         try {
-            if (_LOG.isDebugEnabled()) {
-                _LOG.debug("-------------------------------------------------");
-                _LOG.debug("--> URL: " + url);
-            }
             if (__moduleCfg.isUseProxy()) {
                 _conn = (HttpURLConnection) new URL(url).openConnection(__moduleCfg.getProxy());
             } else {
@@ -150,8 +156,8 @@ public class WebProxy implements IModule, IWebProxy {
             }
             //
             if (_LOG.isDebugEnabled()) {
-                _LOG.debug("--> Method: " + method.name());
-                _LOG.debug("--> Request Headers: ");
+                _LOG.debug("--> [" + _threadId + "] Method: " + method.name());
+                _LOG.debug("--> [" + _threadId + "] Request Headers: ");
             }
             //
             Enumeration _header = request.getHeaderNames();
@@ -161,7 +167,7 @@ public class WebProxy implements IModule, IWebProxy {
                 _conn.setRequestProperty(_name, _value);
                 //
                 if (_LOG.isDebugEnabled()) {
-                    _LOG.debug("--> \t - " + _name + ": " + _value);
+                    _LOG.debug("--> [" + _threadId + "] \t - " + _name + ": " + _value);
                 }
             }
             _conn.connect();
@@ -172,7 +178,9 @@ public class WebProxy implements IModule, IWebProxy {
                 DataOutputStream _output = new DataOutputStream(_conn.getOutputStream());
                 try {
                     if (StringUtils.contains(request.getContentType(), "multipart/")) {
-                        _LOG.debug("--> Multipart: TRUE");
+                        if (_LOG.isDebugEnabled()) {
+                            _LOG.debug("--> [" + _threadId + "] Multipart: TRUE");
+                        }
                         //
                         _multipartFlag = true;
                         IOUtils.copyLarge(request.getInputStream(), _output);
@@ -182,10 +190,10 @@ public class WebProxy implements IModule, IWebProxy {
                         IOUtils.write(_queryStr, _output, _charset);
                         //
                         if (_LOG.isDebugEnabled()) {
-                            _LOG.debug("--> Request Parameters: ");
-                            Map<String, String> _paramsMap = ParamUtils.parseQueryParamStr(_queryStr);
+                            _LOG.debug("--> [" + _threadId + "] Request Parameters: ");
+                            Map<String, String> _paramsMap = ParamUtils.parseQueryParamStr(_queryStr, true, _charset);
                             for (Map.Entry<String, String> _param : _paramsMap.entrySet()) {
-                                _LOG.debug("--> \t - " + _param.getKey() + ": " + URLDecoder.decode(_param.getValue(), _charset));
+                                _LOG.debug("--> [" + _threadId + "] \t - " + _param.getKey() + ": " + _param.getValue());
                             }
                         }
                     }
@@ -199,8 +207,8 @@ public class WebProxy implements IModule, IWebProxy {
             response.setStatus(_code);
             //
             if (_LOG.isDebugEnabled()) {
-                _LOG.debug("--> Response Code: " + _code);
-                _LOG.debug("--> Response Headers: ");
+                _LOG.debug("--> [" + _threadId + "] Response Code: " + _code);
+                _LOG.debug("--> [" + _threadId + "] Response Headers: ");
             }
             //
             Map<String, List<String>> _headers = _conn.getHeaderFields();
@@ -209,7 +217,7 @@ public class WebProxy implements IModule, IWebProxy {
                     String _values = StringUtils.join(_entry.getValue(), ",");
                     response.setHeader(_entry.getKey(), _values);
                     if (_LOG.isDebugEnabled()) {
-                        _LOG.debug("--> \t - " + _entry.getKey() + ": " + _values);
+                        _LOG.debug("--> [" + _threadId + "] \t - " + _entry.getKey() + ": " + _values);
                     }
                 }
             }
@@ -221,15 +229,17 @@ public class WebProxy implements IModule, IWebProxy {
                         IOUtils.write(_content, response.getOutputStream());
                         //
                         if (_LOG.isDebugEnabled()) {
-                            _LOG.debug("--> Response Content: " + __doParseContentBody(_conn, _content, WebMVC.get().getModuleCfg().getDefaultCharsetEncoding()));
+                            _LOG.debug("--> [" + _threadId + "] Response Content: " + __doParseContentBody(_conn, _content, WebMVC.get().getModuleCfg().getDefaultCharsetEncoding()));
                         }
                     } else {
                         IOUtils.copyLarge(_conn.getInputStream(), response.getOutputStream());
                         //
-                        _LOG.debug("--> Response Content: MultipartBody");
+                        if (_LOG.isDebugEnabled()) {
+                            _LOG.debug("--> [" + _threadId + "] Response Content: MultipartBody");
+                        }
                     }
-                } else {
-                    _LOG.debug("--> Response Content: NULL");
+                } else if (_LOG.isDebugEnabled()) {
+                    _LOG.debug("--> [" + _threadId + "] Response Content: NULL");
                 }
             } else {
                 InputStream _inputStream = _conn.getInputStream();
@@ -238,10 +248,10 @@ public class WebProxy implements IModule, IWebProxy {
                     IOUtils.write(_content, response.getOutputStream());
                     //
                     if (_LOG.isDebugEnabled()) {
-                        _LOG.debug("--> Response Content: " + __doParseContentBody(_conn, _content, WebMVC.get().getModuleCfg().getDefaultCharsetEncoding()));
+                        _LOG.debug("--> [" + _threadId + "] Response Content: " + __doParseContentBody(_conn, _content, WebMVC.get().getModuleCfg().getDefaultCharsetEncoding()));
                     }
-                } else {
-                    _LOG.debug("--> Response Content: NULL");
+                } else if (_LOG.isDebugEnabled()) {
+                    _LOG.debug("--> [" + _threadId + "] Response Content: NULL");
                 }
             }
             response.flushBuffer();
@@ -250,7 +260,13 @@ public class WebProxy implements IModule, IWebProxy {
         } finally {
             IOUtils.close(_conn);
             //
-            _LOG.debug("-------------------------------------------------");
+            if (_LOG.isDebugEnabled()) {
+                if (_consumeTime != null) {
+                    _consumeTime.stop();
+                    _LOG.debug("--> [" + _threadId + "] Total execution time: " + _consumeTime.getTime() + "ms");
+                }
+                _LOG.debug("-------------------------------------------------");
+            }
         }
     }
 
