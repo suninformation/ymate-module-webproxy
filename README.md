@@ -19,6 +19,7 @@
 
 - 将工程项目的 `web.xml` 中配置的 `filter` 过滤器类调整为 `net.ymate.module.webproxy.support.DispatchProxyFilter` 即可，完整配置如下：
 
+
     <?xml version="1.0" encoding="UTF-8"?>
     	<web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
     	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
