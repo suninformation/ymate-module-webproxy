@@ -1,6 +1,6 @@
 ### WebProxy
 
-基于YMP框架实现的简单HTTP请求透传代理模块，用于将本地请求转发至远程服务器，并向浏览器返回远程服务的响应结果；
+基于YMP框架实现的简单HTTP请求透传代理模块，用于将本地请求转发至远程服务器并返回远程服务的响应结果；
 
 #### Maven包依赖
 
@@ -19,32 +19,31 @@
 
 - 将工程项目的 `web.xml` 中配置的 `filter` 过滤器类调整为 `net.ymate.module.webproxy.support.DispatchProxyFilter` 即可，完整配置如下：
 
-
-    <?xml version="1.0" encoding="UTF-8"?>
-    	<web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
-    	         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    	         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-    
-        <listener>
-            <listener-class>net.ymate.platform.webmvc.support.WebAppEventListener</listener-class>
-        </listener>
-    
-        <filter>
-            <filter-name>DispatchFilter</filter-name>
-            <filter-class>net.ymate.module.webproxy.support.DispatchProxyFilter</filter-class>
-        </filter>
-        <filter-mapping>
-            <filter-name>DispatchFilter</filter-name>
-            <url-pattern>/*</url-pattern>
-            <dispatcher>REQUEST</dispatcher>
-            <dispatcher>FORWARD</dispatcher>
-        </filter-mapping>
+        <?xml version="1.0" encoding="UTF-8"?>
+            <web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
         
-        <welcome-file-list>
-            <welcome-file>index.html</welcome-file>
-            <welcome-file>index.jsp</welcome-file>
-        </welcome-file-list>
-    </web-app>
+            <listener>
+                <listener-class>net.ymate.platform.webmvc.support.WebAppEventListener</listener-class>
+            </listener>
+        
+            <filter>
+                <filter-name>DispatchFilter</filter-name>
+                <filter-class>net.ymate.module.webproxy.support.DispatchProxyFilter</filter-class>
+            </filter>
+            <filter-mapping>
+                <filter-name>DispatchFilter</filter-name>
+                <url-pattern>/*</url-pattern>
+                <dispatcher>REQUEST</dispatcher>
+                <dispatcher>FORWARD</dispatcher>
+            </filter-mapping>
+        
+            <welcome-file-list>
+                <welcome-file>index.html</welcome-file>
+                <welcome-file>index.jsp</welcome-file>
+            </welcome-file-list>
+        </web-app>
 
 ### 模块配置参数说明
 
@@ -110,3 +109,11 @@
     信息: Deployment of web application directory /Users/xxxx/Java/apache-tomcat-7.0.54/webapps/manager has finished in 611 ms
 
 接下来，使用浏览器访问你本地的服务（如：`http://localhost:8080/xxx/xxx/xxx`），请求将被转发至 `service_base_url` 配置的URL地址！
+
+####One More Thing
+
+YMP不仅提供便捷的Web及其它Java项目的快速开发体验，也将不断提供更多丰富的项目实践经验。
+
+感兴趣的小伙伴儿们可以加入 官方QQ群480374360，一起交流学习，帮助YMP成长！
+
+了解更多有关YMP框架的内容，请访问官网：http://www.ymate.net/
