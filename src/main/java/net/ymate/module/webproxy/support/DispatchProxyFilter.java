@@ -48,6 +48,8 @@ public class DispatchProxyFilter implements Filter {
 
     private String __prefix;
 
+    private String __charset;
+
     public void init(FilterConfig filterConfig) throws ServletException {
         __filterConfig = filterConfig;
         String _regex = WebMVC.get().getModuleCfg().getRequestIgnoreRegex();
@@ -55,6 +57,7 @@ public class DispatchProxyFilter implements Filter {
             __ignorePatern = Pattern.compile(_regex, Pattern.CASE_INSENSITIVE);
         }
         __prefix = WebProxy.get().getModuleCfg().getServiceRequestPrefix();
+        __charset = WebMVC.get().getModuleCfg().getDefaultCharsetEncoding();
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -67,6 +70,10 @@ public class DispatchProxyFilter implements Filter {
                 GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __filterConfig.getServletContext(), _request, _response);
             } else {
                 try {
+                    request.setCharacterEncoding(__charset);
+                    response.setCharacterEncoding(__charset);
+                    response.setContentType(Type.ContentType.HTML.getContentType().concat(";charset=").concat(__charset));
+                    //
                     String _requestMapping = _requestContext.getRequestMapping();
                     if (StringUtils.isNotBlank(__prefix)) {
                         _requestMapping = StringUtils.substringAfter(_requestMapping, __prefix);

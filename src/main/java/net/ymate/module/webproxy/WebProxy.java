@@ -37,6 +37,7 @@ import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -176,14 +177,15 @@ public class WebProxy implements IModule, IWebProxy {
                         _multipartFlag = true;
                         IOUtils.copyLarge(request.getInputStream(), _output);
                     } else {
-                        String _queryStr = ParamUtils.buildQueryParamStr(request.getParameterMap(), true, request.getCharacterEncoding());
-                        IOUtils.write(_queryStr, _output, request.getCharacterEncoding());
+                        String _charset = request.getCharacterEncoding();
+                        String _queryStr = ParamUtils.buildQueryParamStr(request.getParameterMap(), true, _charset);
+                        IOUtils.write(_queryStr, _output, _charset);
                         //
                         if (_LOG.isDebugEnabled()) {
                             _LOG.debug("--> Request Parameters: ");
                             Map<String, String> _paramsMap = ParamUtils.parseQueryParamStr(_queryStr);
                             for (Map.Entry<String, String> _param : _paramsMap.entrySet()) {
-                                _LOG.debug("--> \t - " + _param.getKey() + ": " + _param.getValue());
+                                _LOG.debug("--> \t - " + _param.getKey() + ": " + URLDecoder.decode(_param.getValue(), _charset));
                             }
                         }
                     }
@@ -230,7 +232,7 @@ public class WebProxy implements IModule, IWebProxy {
                     _LOG.debug("--> Response Content: NULL");
                 }
             } else {
-                InputStream _inputStream = _conn.getErrorStream();
+                InputStream _inputStream = _conn.getInputStream();
                 if (_inputStream != null) {
                     byte[] _content = IOUtils.toByteArray(_inputStream);
                     IOUtils.write(_content, response.getOutputStream());
