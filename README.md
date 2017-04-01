@@ -17,7 +17,7 @@
 
 - 首先，你需要创建一个基于YMPv2框架的JavaWeb工程项目；（[如何快速搭建工程?](http://git.oschina.net/suninformation/ymate-platform-v2/wikis/Quickstart_New)）
 
-- 将工程项目的 `web.xml` 中配置的 `filter` 过滤器类调整为 `net.ymate.module.webproxy.support.DispatchProxyFilter` 即可，完整配置如下：
+- 调整`web.xml`中配置的`filter`过滤器类，完整配置如下：
 
         <?xml version="1.0" encoding="UTF-8"?>
             <web-app id="WebApp_ID" version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
