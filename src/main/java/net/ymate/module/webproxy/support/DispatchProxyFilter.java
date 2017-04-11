@@ -16,6 +16,9 @@
 package net.ymate.module.webproxy.support;
 
 import net.ymate.module.webproxy.WebProxy;
+import net.ymate.module.webproxy.WebProxyEvent;
+import net.ymate.platform.core.YMP;
+import net.ymate.platform.core.event.IEvent;
 import net.ymate.platform.core.util.RuntimeUtils;
 import net.ymate.platform.webmvc.IRequestContext;
 import net.ymate.platform.webmvc.WebMVC;
@@ -70,6 +73,8 @@ public class DispatchProxyFilter implements Filter {
                 GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __filterConfig.getServletContext(), _request, _response);
             } else {
                 try {
+                    YMP.get().getEvents().fireEvent(new WebProxyEvent(WebProxy.get(), WebProxyEvent.EVENT.REQUEST_RECEIVED).addParamExtend(IEvent.EVENT_SOURCE, _requestContext));
+                    //
                     request.setCharacterEncoding(__charset);
                     response.setCharacterEncoding(__charset);
                     response.setContentType(Type.ContentType.HTML.getContentType().concat(";charset=").concat(__charset));
@@ -87,6 +92,8 @@ public class DispatchProxyFilter implements Filter {
                     WebProxy.get().transmission(_request, _response, _url.toString(), _requestContext.getHttpMethod());
                 } catch (Throwable e) {
                     _LOG.warn("An exception occurred: ", RuntimeUtils.unwrapThrow(e));
+                } finally {
+                    YMP.get().getEvents().fireEvent(new WebProxyEvent(WebProxy.get(), WebProxyEvent.EVENT.REQUEST_COMPLETED).addParamExtend(IEvent.EVENT_SOURCE, _requestContext));
                 }
             }
         } else {

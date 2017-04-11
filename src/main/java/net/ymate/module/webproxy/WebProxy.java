@@ -84,6 +84,7 @@ public class WebProxy implements IModule, IWebProxy {
             //
             __owner = owner;
             __moduleCfg = new DefaultModuleCfg(owner);
+            __owner.getEvents().registerEvent(WebProxyEvent.class);
             //
             _LOG.info("-->          service_base_url: " + __moduleCfg.getServiceBaseUrl());
             _LOG.info("-->            request_prefix: " + StringUtils.defaultIfBlank(__moduleCfg.getServiceRequestPrefix(), "none"));
@@ -168,12 +169,14 @@ public class WebProxy implements IModule, IWebProxy {
             while (_header.hasMoreElements()) {
                 String _name = (String) _header.nextElement();
                 String _value = request.getHeader(_name);
-                if (__moduleCfg.isTransferHeaderEnabled() && __moduleCfg.getTransferHeaderFilters().contains(_name)) {
+                boolean _flag = false;
+                if (__moduleCfg.isTransferHeaderEnabled() && !__moduleCfg.getTransferHeaderFilters().contains(_name)) {
                     _conn.setRequestProperty(_name, _value);
+                    _flag = true;
                 }
                 //
                 if (_LOG.isDebugEnabled()) {
-                    _LOG.debug("--> [" + _threadId + "] \t - " + _name + ": " + _value);
+                    _LOG.debug("--> [" + _threadId + "] \t " + (_flag ? " - " : " > ") + _name + ": " + _value);
                 }
             }
             _conn.connect();
