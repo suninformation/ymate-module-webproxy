@@ -88,6 +88,10 @@ public class WebProxy implements IModule, IWebProxy {
             _LOG.info("-->          service_base_url: " + __moduleCfg.getServiceBaseUrl());
             _LOG.info("-->            request_prefix: " + StringUtils.defaultIfBlank(__moduleCfg.getServiceRequestPrefix(), "none"));
             _LOG.info("-->                     proxy: " + (__moduleCfg.getProxy() != null ? __moduleCfg.getProxy().toString() : "none"));
+            _LOG.info("-->   transfer_header_enabled: " + __moduleCfg.isTransferHeaderEnabled());
+            if (__moduleCfg.isTransferHeaderEnabled()) {
+                _LOG.info("-->   transfer_header_filters: " + __moduleCfg.getTransferHeaderFilters());
+            }
             _LOG.info("-->                use_caches: " + __moduleCfg.isUseCaches());
             _LOG.info("--> instance_follow_redirects: " + __moduleCfg.isInstanceFollowRedirects());
             _LOG.info("-->        connection_timeout: " + __moduleCfg.getConnectTimeout());
@@ -164,7 +168,9 @@ public class WebProxy implements IModule, IWebProxy {
             while (_header.hasMoreElements()) {
                 String _name = (String) _header.nextElement();
                 String _value = request.getHeader(_name);
-                _conn.setRequestProperty(_name, _value);
+                if (__moduleCfg.isTransferHeaderEnabled() && __moduleCfg.getTransferHeaderFilters().contains(_name)) {
+                    _conn.setRequestProperty(_name, _value);
+                }
                 //
                 if (_LOG.isDebugEnabled()) {
                     _LOG.debug("--> [" + _threadId + "] \t - " + _name + ": " + _value);

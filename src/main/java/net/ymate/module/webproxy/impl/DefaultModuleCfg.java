@@ -24,6 +24,9 @@ import org.apache.commons.lang.StringUtils;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,6 +50,10 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
     private String __serviceBaseUrl;
 
     private String __serviceRequestPrefix;
+
+    private boolean __transferHeaderEnabled;
+
+    private List<String> __transferHeaderFilters;
 
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebProxy.MODULE_NAME);
@@ -82,6 +89,19 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
         //
         __connectTimeout = BlurObject.bind(_moduleCfgs.get("connect_timeout")).toIntValue();
         __readTimeout = BlurObject.bind(_moduleCfgs.get("read_timeout")).toIntValue();
+        //
+        __transferHeaderEnabled = BlurObject.bind(_moduleCfgs.get("transfer_header_enabled")).toBooleanValue();
+        //
+        if (__transferHeaderEnabled) {
+            String[] _filters = StringUtils.split(_moduleCfgs.get("transfer_header_filters"), "|");
+            if (_filters != null && _filters.length > 0) {
+                __transferHeaderFilters = Arrays.asList(_filters);
+            } else {
+                __transferHeaderFilters = Collections.emptyList();
+            }
+        } else {
+            __transferHeaderFilters = Collections.emptyList();
+        }
     }
 
     public boolean isUseProxy() {
@@ -114,5 +134,13 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
 
     public String getServiceRequestPrefix() {
         return __serviceRequestPrefix;
+    }
+
+    public boolean isTransferHeaderEnabled() {
+        return __transferHeaderEnabled;
+    }
+
+    public List<String> getTransferHeaderFilters() {
+        return __transferHeaderFilters;
     }
 }

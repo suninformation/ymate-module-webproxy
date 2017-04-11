@@ -74,6 +74,12 @@
     
     # 数据读超时时间(毫秒), 默认值: 0
     ymp.configs.module.webproxy.read_timeout=
+    
+    # 是否开启请求头传输, 默认值: false
+    ymp.configs.module.webproxy.transfer_header_enabled=
+    
+    # 传输请求头名称过滤列表, 存在于列表中的请求头将不被发送, 多个名称间用'|'分隔
+    ymp.configs.module.webproxy.transfer_header_filters=
 
 #### 启动成功日志
 
@@ -94,6 +100,7 @@
     2017/04/01 11:44:05:955 CST [INFO] WebProxy - -->          service_base_url: http://xxxx.xx/api
     2017/04/01 11:44:05:955 CST [INFO] WebProxy - -->            request_prefix: none
     2017/04/01 11:44:05:955 CST [INFO] WebProxy - -->                     proxy: none
+    2017/04/01 11:44:05:955 CST [INFO] WebProxy - -->   transfer_header_enabled: false
     2017/04/01 11:44:05:955 CST [INFO] WebProxy - -->                use_caches: false
     2017/04/01 11:44:05:955 CST [INFO] WebProxy - --> instance_follow_redirects: false
     2017/04/01 11:44:05:956 CST [INFO] WebProxy - -->        connection_timeout: 0

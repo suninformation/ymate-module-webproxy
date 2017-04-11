@@ -16,6 +16,7 @@
 package net.ymate.module.webproxy;
 
 import java.net.Proxy;
+import java.util.List;
 
 /**
  * @author 刘镇 (suninformation@163.com) on 2017/03/29 上午 09:14
@@ -62,4 +63,14 @@ public interface IWebProxyModuleCfg {
      * @return 请求路径前缀(仅透传转发以此为前缀的请求)，可选参数，默认值为空
      */
     String getServiceRequestPrefix();
+
+    /**
+     * @return 是否开启请求头传输, 默认值: false
+     */
+    boolean isTransferHeaderEnabled();
+
+    /**
+     * @return 传输请求头名称过滤列表, 存在于列表中的请求头将不被发送, 多个名称间用'|'分隔
+     */
+    List<String> getTransferHeaderFilters();
 }
