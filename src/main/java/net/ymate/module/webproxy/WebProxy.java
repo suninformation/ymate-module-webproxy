@@ -91,7 +91,8 @@ public class WebProxy implements IModule, IWebProxy {
             _LOG.info("-->                     proxy: " + (__moduleCfg.getProxy() != null ? __moduleCfg.getProxy().toString() : "none"));
             _LOG.info("-->   transfer_header_enabled: " + __moduleCfg.isTransferHeaderEnabled());
             if (__moduleCfg.isTransferHeaderEnabled()) {
-                _LOG.info("-->   transfer_header_filters: " + __moduleCfg.getTransferHeaderFilters());
+                _LOG.info("--> transfer_header_whitelist: " + __moduleCfg.getTransferHeaderWhiteList());
+                _LOG.info("--> transfer_header_blacklist: " + __moduleCfg.getTransferHeaderBlackList());
             }
             _LOG.info("-->                use_caches: " + __moduleCfg.isUseCaches());
             _LOG.info("--> instance_follow_redirects: " + __moduleCfg.isInstanceFollowRedirects());
@@ -139,6 +140,9 @@ public class WebProxy implements IModule, IWebProxy {
             _LOG.debug("--> [" + _threadId + "] URL: " + url);
         }
         //
+        boolean _postFlag = Type.HttpMethod.POST.equals(method);
+        boolean _multipartFlag = _postFlag && StringUtils.contains(request.getContentType(), "multipart/");
+        //
         HttpURLConnection _conn = null;
         try {
             if (__moduleCfg.isUseProxy()) {
@@ -148,7 +152,7 @@ public class WebProxy implements IModule, IWebProxy {
             }
             _conn.setUseCaches(__moduleCfg.isUseCaches());
             _conn.setInstanceFollowRedirects(__moduleCfg.isInstanceFollowRedirects());
-            if (Type.HttpMethod.POST.equals(method)) {
+            if (_postFlag) {
                 _conn.setDoOutput(true);
                 _conn.setDoInput(true);
                 _conn.setRequestMethod(method.name());
@@ -170,7 +174,10 @@ public class WebProxy implements IModule, IWebProxy {
                 String _name = (String) _header.nextElement();
                 String _value = request.getHeader(_name);
                 boolean _flag = false;
-                if (__moduleCfg.isTransferHeaderEnabled() && !__moduleCfg.getTransferHeaderFilters().contains(_name)) {
+                if (_multipartFlag && StringUtils.equalsIgnoreCase(_name, "content-type") ||
+                        __moduleCfg.isTransferHeaderEnabled() &&
+                                (!__moduleCfg.getTransferHeaderBlackList().isEmpty() && !__moduleCfg.getTransferHeaderBlackList().contains(_name) ||
+                                        !__moduleCfg.getTransferHeaderWhiteList().isEmpty() && __moduleCfg.getTransferHeaderWhiteList().contains(_name))) {
                     _conn.setRequestProperty(_name, _value);
                     _flag = true;
                 }
@@ -181,17 +188,13 @@ public class WebProxy implements IModule, IWebProxy {
             }
             _conn.connect();
             //
-            boolean _multipartFlag = false;
-            //
-            if (Type.HttpMethod.POST.equals(method)) {
+            if (_postFlag) {
                 DataOutputStream _output = new DataOutputStream(_conn.getOutputStream());
                 try {
-                    if (StringUtils.contains(request.getContentType(), "multipart/")) {
+                    if (_multipartFlag) {
                         if (_LOG.isDebugEnabled()) {
                             _LOG.debug("--> [" + _threadId + "] Multipart: TRUE");
                         }
-                        //
-                        _multipartFlag = true;
                         IOUtils.copyLarge(request.getInputStream(), _output);
                     } else {
                         String _charset = request.getCharacterEncoding();

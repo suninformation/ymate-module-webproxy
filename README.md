@@ -78,8 +78,11 @@
     # 是否开启请求头传输, 默认值: false
     ymp.configs.module.webproxy.transfer_header_enabled=
     
-    # 传输请求头名称过滤列表, 存在于列表中的请求头将不被发送, 多个名称间用'|'分隔
-    ymp.configs.module.webproxy.transfer_header_filters=
+    # 传输请求头名称黑名单, 默认值为空(表示不启用), 存在于列表中的请求头将不被发送, 多个名称间用'|'分隔
+    ymp.configs.module.webproxy.transfer_header_whitelist=
+    
+    # 传输请求头名称白名单, 默认值为空(表示不启用), 存在于列表中的请求头将被发送, 多个名称间用'|'分隔
+    ymp.configs.module.webproxy.transfer_header_blacklist=
 
 #### 启动成功日志
 

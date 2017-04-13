@@ -53,7 +53,9 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
 
     private boolean __transferHeaderEnabled;
 
-    private List<String> __transferHeaderFilters;
+    private List<String> __transferHeaderWhiteList;
+
+    private List<String> __transferHeaderBlackList;
 
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebProxy.MODULE_NAME);
@@ -93,14 +95,22 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
         __transferHeaderEnabled = BlurObject.bind(_moduleCfgs.get("transfer_header_enabled")).toBooleanValue();
         //
         if (__transferHeaderEnabled) {
-            String[] _filters = StringUtils.split(_moduleCfgs.get("transfer_header_filters"), "|");
+            String[] _filters = StringUtils.split(_moduleCfgs.get("transfer_header_whitelist"), "|");
             if (_filters != null && _filters.length > 0) {
-                __transferHeaderFilters = Arrays.asList(_filters);
+                __transferHeaderWhiteList = Arrays.asList(_filters);
             } else {
-                __transferHeaderFilters = Collections.emptyList();
+                __transferHeaderWhiteList = Collections.emptyList();
+            }
+            //
+            _filters = StringUtils.split(_moduleCfgs.get("transfer_header_blacklist"), "|");
+            if (_filters != null && _filters.length > 0) {
+                __transferHeaderBlackList = Arrays.asList(_filters);
+            } else {
+                __transferHeaderBlackList = Collections.emptyList();
             }
         } else {
-            __transferHeaderFilters = Collections.emptyList();
+            __transferHeaderWhiteList = Collections.emptyList();
+            __transferHeaderBlackList = Collections.emptyList();
         }
     }
 
@@ -140,7 +150,11 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
         return __transferHeaderEnabled;
     }
 
-    public List<String> getTransferHeaderFilters() {
-        return __transferHeaderFilters;
+    public List<String> getTransferHeaderBlackList() {
+        return __transferHeaderBlackList;
+    }
+
+    public List<String> getTransferHeaderWhiteList() {
+        return __transferHeaderWhiteList;
     }
 }

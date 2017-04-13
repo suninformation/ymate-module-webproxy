@@ -70,7 +70,12 @@ public interface IWebProxyModuleCfg {
     boolean isTransferHeaderEnabled();
 
     /**
-     * @return 传输请求头名称过滤列表, 存在于列表中的请求头将不被发送, 多个名称间用'|'分隔
+     * @return 传输请求头名称黑名单, 默认值为空(表示不启用), 存在于列表中的请求头将不被发送, 多个名称间用'|'分隔
      */
-    List<String> getTransferHeaderFilters();
+    List<String> getTransferHeaderBlackList();
+
+    /**
+     * @return 传输请求头名称白名单, 默认值为空(表示不启用), 存在于列表中的请求头将被发送, 多个名称间用'|'分隔
+     */
+    List<String> getTransferHeaderWhiteList();
 }
