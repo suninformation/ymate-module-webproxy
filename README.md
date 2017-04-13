@@ -79,10 +79,10 @@
     ymp.configs.module.webproxy.transfer_header_enabled=
     
     # 传输请求头名称黑名单, 默认值为空(表示不启用), 存在于列表中的请求头将不被发送, 多个名称间用'|'分隔
-    ymp.configs.module.webproxy.transfer_header_whitelist=
+    ymp.configs.module.webproxy.transfer_header_blacklist=
     
     # 传输请求头名称白名单, 默认值为空(表示不启用), 存在于列表中的请求头将被发送, 多个名称间用'|'分隔
-    ymp.configs.module.webproxy.transfer_header_blacklist=
+    ymp.configs.module.webproxy.transfer_header_whitelist=
 
 #### 启动成功日志
 
