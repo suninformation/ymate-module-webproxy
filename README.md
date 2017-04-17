@@ -83,6 +83,9 @@
     
     # 传输请求头名称白名单, 默认值为空(表示不启用), 存在于列表中的请求头将被发送, 多个名称间用'|'分隔
     ymp.configs.module.webproxy.transfer_header_whitelist=
+    
+    # 响应头名称白名单, 默认值为空(表示不启用), 存在于列表中的响应头将被回传至客户端, 多个名称间用'|'分隔
+    ymp.configs.module.webproxy.response_header_whitelist=
 
 #### 启动成功日志
 

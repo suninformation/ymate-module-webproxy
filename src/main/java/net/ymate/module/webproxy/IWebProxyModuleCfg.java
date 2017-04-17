@@ -78,4 +78,9 @@ public interface IWebProxyModuleCfg {
      * @return 传输请求头名称白名单, 默认值为空(表示不启用), 存在于列表中的请求头将被发送, 多个名称间用'|'分隔
      */
     List<String> getTransferHeaderWhiteList();
+
+    /**
+     * @return 响应头名称白名单, 默认值为空(表示不启用), 存在于列表中的响应头将被回传至客户端, 多个名称间用'|'分隔
+     */
+    List<String> getResponseHeaderWhileList();
 }

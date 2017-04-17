@@ -93,6 +93,7 @@ public class WebProxy implements IModule, IWebProxy {
             if (__moduleCfg.isTransferHeaderEnabled()) {
                 _LOG.info("--> transfer_header_whitelist: " + __moduleCfg.getTransferHeaderWhiteList());
                 _LOG.info("--> transfer_header_blacklist: " + __moduleCfg.getTransferHeaderBlackList());
+                _LOG.info("--> response_header_whitelist: " + __moduleCfg.getResponseHeaderWhileList());
             }
             _LOG.info("-->                use_caches: " + __moduleCfg.isUseCaches());
             _LOG.info("--> instance_follow_redirects: " + __moduleCfg.isInstanceFollowRedirects());
@@ -140,9 +141,6 @@ public class WebProxy implements IModule, IWebProxy {
             _LOG.debug("--> [" + _threadId + "] URL: " + url);
         }
         //
-        boolean _postFlag = Type.HttpMethod.POST.equals(method);
-        boolean _multipartFlag = _postFlag && StringUtils.contains(request.getContentType(), "multipart/");
-        //
         HttpURLConnection _conn = null;
         try {
             if (__moduleCfg.isUseProxy()) {
@@ -152,6 +150,9 @@ public class WebProxy implements IModule, IWebProxy {
             }
             _conn.setUseCaches(__moduleCfg.isUseCaches());
             _conn.setInstanceFollowRedirects(__moduleCfg.isInstanceFollowRedirects());
+            //
+            boolean _postFlag = Type.HttpMethod.POST.equals(method);
+            boolean _multipartFlag = _postFlag && StringUtils.contains(request.getContentType(), "multipart/");
             if (_postFlag) {
                 _conn.setDoOutput(true);
                 _conn.setDoInput(true);
@@ -174,7 +175,7 @@ public class WebProxy implements IModule, IWebProxy {
                 String _name = (String) _header.nextElement();
                 String _value = request.getHeader(_name);
                 boolean _flag = false;
-                if (_multipartFlag && StringUtils.equalsIgnoreCase(_name, "content-type") ||
+                if (_postFlag && StringUtils.equalsIgnoreCase(_name, "content-type") ||
                         __moduleCfg.isTransferHeaderEnabled() &&
                                 (!__moduleCfg.getTransferHeaderBlackList().isEmpty() && !__moduleCfg.getTransferHeaderBlackList().contains(_name) ||
                                         !__moduleCfg.getTransferHeaderWhiteList().isEmpty() && __moduleCfg.getTransferHeaderWhiteList().contains(_name))) {
@@ -216,7 +217,6 @@ public class WebProxy implements IModule, IWebProxy {
             }
             //
             int _code = _conn.getResponseCode();
-            response.setStatus(_code);
             //
             if (_LOG.isDebugEnabled()) {
                 _LOG.debug("--> [" + _threadId + "] Response Code: " + _code);
@@ -226,47 +226,58 @@ public class WebProxy implements IModule, IWebProxy {
             Map<String, List<String>> _headers = _conn.getHeaderFields();
             for (Map.Entry<String, List<String>> _entry : _headers.entrySet()) {
                 if (_entry.getKey() != null) {
+                    boolean _flag = false;
                     String _values = StringUtils.join(_entry.getValue(), ",");
-                    response.setHeader(_entry.getKey(), _values);
+                    if (StringUtils.equalsIgnoreCase(_entry.getKey(), "content-type") || __moduleCfg.isTransferHeaderEnabled() &&
+                            !__moduleCfg.getResponseHeaderWhileList().isEmpty() && __moduleCfg.getResponseHeaderWhileList().contains(_entry.getKey())) {
+                        response.setHeader(_entry.getKey(), _values);
+                        _flag = true;
+                    }
                     if (_LOG.isDebugEnabled()) {
-                        _LOG.debug("--> [" + _threadId + "] \t - " + _entry.getKey() + ": " + _values);
+                        _LOG.debug("--> [" + _threadId + "] \t " + (_flag ? " - " : " > ") + _entry.getKey() + ": " + _values);
                     }
                 }
             }
-            if (HttpURLConnection.HTTP_OK == _code) {
-                InputStream _inputStream = _conn.getInputStream();
-                if (_inputStream != null) {
-                    if (!_multipartFlag) {
+            if (HttpURLConnection.HTTP_BAD_REQUEST <= _conn.getResponseCode()) {
+                response.sendError(_code);
+            } else {
+                if (HttpURLConnection.HTTP_OK == _code) {
+                    InputStream _inputStream = _conn.getInputStream();
+                    if (_inputStream != null) {
+                        if (!_multipartFlag) {
+                            byte[] _content = IOUtils.toByteArray(_inputStream);
+                            IOUtils.write(_content, response.getOutputStream());
+                            //
+                            if (_LOG.isDebugEnabled()) {
+                                _LOG.debug("--> [" + _threadId + "] Response Content: " + __doParseContentBody(_conn, _content, WebMVC.get().getModuleCfg().getDefaultCharsetEncoding()));
+                            }
+                        } else {
+                            IOUtils.copyLarge(_conn.getInputStream(), response.getOutputStream());
+                            //
+                            if (_LOG.isDebugEnabled()) {
+                                _LOG.debug("--> [" + _threadId + "] Response Content: MultipartBody");
+                            }
+                        }
+                    } else if (_LOG.isDebugEnabled()) {
+                        _LOG.debug("--> [" + _threadId + "] Response Content: NULL");
+                    }
+                    response.flushBuffer();
+                } else {
+                    InputStream _inputStream = _conn.getInputStream();
+                    if (_inputStream != null) {
                         byte[] _content = IOUtils.toByteArray(_inputStream);
                         IOUtils.write(_content, response.getOutputStream());
                         //
                         if (_LOG.isDebugEnabled()) {
                             _LOG.debug("--> [" + _threadId + "] Response Content: " + __doParseContentBody(_conn, _content, WebMVC.get().getModuleCfg().getDefaultCharsetEncoding()));
                         }
-                    } else {
-                        IOUtils.copyLarge(_conn.getInputStream(), response.getOutputStream());
-                        //
-                        if (_LOG.isDebugEnabled()) {
-                            _LOG.debug("--> [" + _threadId + "] Response Content: MultipartBody");
-                        }
+                    } else if (_LOG.isDebugEnabled()) {
+                        _LOG.debug("--> [" + _threadId + "] Response Content: NULL");
                     }
-                } else if (_LOG.isDebugEnabled()) {
-                    _LOG.debug("--> [" + _threadId + "] Response Content: NULL");
-                }
-            } else {
-                InputStream _inputStream = _conn.getInputStream();
-                if (_inputStream != null) {
-                    byte[] _content = IOUtils.toByteArray(_inputStream);
-                    IOUtils.write(_content, response.getOutputStream());
-                    //
-                    if (_LOG.isDebugEnabled()) {
-                        _LOG.debug("--> [" + _threadId + "] Response Content: " + __doParseContentBody(_conn, _content, WebMVC.get().getModuleCfg().getDefaultCharsetEncoding()));
-                    }
-                } else if (_LOG.isDebugEnabled()) {
-                    _LOG.debug("--> [" + _threadId + "] Response Content: NULL");
+                    response.setStatus(_code);
+                    response.flushBuffer();
                 }
             }
-            response.flushBuffer();
         } catch (Throwable e) {
             _LOG.warn("An exception occurred while processing request mapping '" + url + "': ", RuntimeUtils.unwrapThrow(e));
         } finally {

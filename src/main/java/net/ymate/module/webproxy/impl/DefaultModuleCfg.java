@@ -57,6 +57,8 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
 
     private List<String> __transferHeaderBlackList;
 
+    private List<String> __responseHeaderWhiteList;
+
     public DefaultModuleCfg(YMP owner) {
         Map<String, String> _moduleCfgs = owner.getConfig().getModuleConfigs(IWebProxy.MODULE_NAME);
         //
@@ -108,9 +110,18 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
             } else {
                 __transferHeaderBlackList = Collections.emptyList();
             }
+            //
+            _filters = StringUtils.split(_moduleCfgs.get("response_header_whitelist"), "|");
+            if (_filters != null && _filters.length > 0) {
+                __responseHeaderWhiteList = Arrays.asList(_filters);
+            } else {
+                __responseHeaderWhiteList = Collections.emptyList();
+            }
         } else {
             __transferHeaderWhiteList = Collections.emptyList();
             __transferHeaderBlackList = Collections.emptyList();
+            //
+            __responseHeaderWhiteList = Collections.emptyList();
         }
     }
 
@@ -156,5 +167,9 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
 
     public List<String> getTransferHeaderWhiteList() {
         return __transferHeaderWhiteList;
+    }
+
+    public List<String> getResponseHeaderWhileList() {
+        return __responseHeaderWhiteList;
     }
 }
