@@ -51,7 +51,9 @@ public class DispatchProxyFilter implements Filter {
 
     private String __prefix;
 
-    private String __charset;
+    private String __charsetEncoding;
+    private String __requestMethodParam;
+    private String __requestPrefix;
 
     public void init(FilterConfig filterConfig) throws ServletException {
         __filterConfig = filterConfig;
@@ -60,13 +62,21 @@ public class DispatchProxyFilter implements Filter {
             __ignorePatern = Pattern.compile(_regex, Pattern.CASE_INSENSITIVE);
         }
         __prefix = WebProxy.get().getModuleCfg().getServiceRequestPrefix();
-        __charset = WebMVC.get().getModuleCfg().getDefaultCharsetEncoding();
+        //
+        __charsetEncoding = WebMVC.get().getModuleCfg().getDefaultCharsetEncoding();
+        __requestMethodParam = WebMVC.get().getModuleCfg().getRequestMethodParam();
+        __requestPrefix = WebMVC.get().getModuleCfg().getRequestPrefix();
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest _request = new RequestMethodWrapper((HttpServletRequest) request, WebMVC.get().getModuleCfg().getRequestMethodParam());
+        request.setCharacterEncoding(__charsetEncoding);
+        response.setCharacterEncoding(__charsetEncoding);
+        //
+        response.setContentType(Type.ContentType.HTML.getContentType().concat("; charset=").concat(__charsetEncoding));
+        //
+        HttpServletRequest _request = new RequestMethodWrapper((HttpServletRequest) request, __requestMethodParam);
         HttpServletResponse _response = (HttpServletResponse) response;
-        IRequestContext _requestContext = new DefaultRequestContext(_request, WebMVC.get().getModuleCfg().getRequestPrefix());
+        IRequestContext _requestContext = new DefaultRequestContext(_request, __requestPrefix);
         if (null == __ignorePatern || !__ignorePatern.matcher(_requestContext.getOriginalUrl()).find()) {
             if (StringUtils.isNotBlank(__prefix) && !StringUtils.startsWith(_requestContext.getRequestMapping(), __prefix)) {
                 _response = new GenericResponseWrapper(_response);
@@ -74,10 +84,6 @@ public class DispatchProxyFilter implements Filter {
             } else {
                 try {
                     YMP.get().getEvents().fireEvent(new WebProxyEvent(WebProxy.get(), WebProxyEvent.EVENT.REQUEST_RECEIVED).addParamExtend(IEvent.EVENT_SOURCE, _requestContext));
-                    //
-                    request.setCharacterEncoding(__charset);
-                    response.setCharacterEncoding(__charset);
-                    response.setContentType(Type.ContentType.HTML.getContentType().concat(";charset=").concat(__charset));
                     //
                     String _requestMapping = _requestContext.getRequestMapping();
                     if (StringUtils.isNotBlank(__prefix)) {
