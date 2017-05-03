@@ -35,6 +35,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -55,6 +56,8 @@ public class DispatchProxyFilter implements Filter {
     private String __requestMethodParam;
     private String __requestPrefix;
 
+    private List<String> __blacklist;
+
     public void init(FilterConfig filterConfig) throws ServletException {
         __filterConfig = filterConfig;
         String _regex = WebMVC.get().getModuleCfg().getRequestIgnoreRegex();
@@ -63,9 +66,28 @@ public class DispatchProxyFilter implements Filter {
         }
         __prefix = WebProxy.get().getModuleCfg().getServiceRequestPrefix();
         //
+        __blacklist = WebProxy.get().getModuleCfg().getTransferBlacklist();
+        //
         __charsetEncoding = WebMVC.get().getModuleCfg().getDefaultCharsetEncoding();
         __requestMethodParam = WebMVC.get().getModuleCfg().getRequestMethodParam();
         __requestPrefix = WebMVC.get().getModuleCfg().getRequestPrefix();
+    }
+
+    private boolean __doMatchBlacklist(String requestMapping) {
+        if (!__blacklist.isEmpty()) {
+            if (__blacklist.contains(requestMapping)) {
+                return true;
+            } else {
+                for (String _mapping : __blacklist) {
+                    if (StringUtils.endsWith(_mapping, "*")) {
+                        if (StringUtils.startsWith(requestMapping, StringUtils.substringBefore(_mapping, "*"))) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
@@ -78,7 +100,7 @@ public class DispatchProxyFilter implements Filter {
         HttpServletResponse _response = (HttpServletResponse) response;
         IRequestContext _requestContext = new DefaultRequestContext(_request, __requestPrefix);
         if (null == __ignorePatern || !__ignorePatern.matcher(_requestContext.getOriginalUrl()).find()) {
-            if (StringUtils.isNotBlank(__prefix) && !StringUtils.startsWith(_requestContext.getRequestMapping(), __prefix)) {
+            if (StringUtils.isNotBlank(__prefix) && !StringUtils.startsWith(_requestContext.getRequestMapping(), __prefix) || __doMatchBlacklist(_requestContext.getRequestMapping())) {
                 _response = new GenericResponseWrapper(_response);
                 GenericDispatcher.create(WebMVC.get()).execute(_requestContext, __filterConfig.getServletContext(), _request, _response);
             } else {

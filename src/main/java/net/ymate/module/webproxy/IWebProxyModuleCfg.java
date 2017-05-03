@@ -65,6 +65,11 @@ public interface IWebProxyModuleCfg {
     String getServiceRequestPrefix();
 
     /**
+     * @return 传输请求黑名单, 默认值为空(表示不启用), 存在于列表中的请求将不被发送, 多个请求名称间用'|'分隔
+     */
+    List<String> getTransferBlacklist();
+
+    /**
      * @return 是否开启请求头传输, 默认值: false
      */
     boolean isTransferHeaderEnabled();

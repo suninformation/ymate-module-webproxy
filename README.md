@@ -75,6 +75,9 @@
     # 数据读超时时间(毫秒), 默认值: 0
     ymp.configs.module.webproxy.read_timeout=
     
+    # 传输请求黑名单, 默认值为空(表示不启用), 存在于列表中的请求将不被发送, 多个请求名称间用'|'分隔
+    ymp.configs.module.webproxy.transfer_blacklist=
+    
     # 是否开启请求头传输, 默认值: false
     ymp.configs.module.webproxy.transfer_header_enabled=
     

@@ -51,6 +51,8 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
 
     private String __serviceRequestPrefix;
 
+    private List<String> __transferBlackList;
+
     private boolean __transferHeaderEnabled;
 
     private List<String> __transferHeaderWhiteList;
@@ -93,6 +95,8 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
         //
         __connectTimeout = BlurObject.bind(_moduleCfgs.get("connect_timeout")).toIntValue();
         __readTimeout = BlurObject.bind(_moduleCfgs.get("read_timeout")).toIntValue();
+        //
+        __transferBlackList = Arrays.asList(StringUtils.split(StringUtils.trimToEmpty(_moduleCfgs.get("transfer_blacklist")), "|"));
         //
         __transferHeaderEnabled = BlurObject.bind(_moduleCfgs.get("transfer_header_enabled")).toBooleanValue();
         //
@@ -155,6 +159,10 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
 
     public String getServiceRequestPrefix() {
         return __serviceRequestPrefix;
+    }
+
+    public List<String> getTransferBlacklist() {
+        return __transferBlackList;
     }
 
     public boolean isTransferHeaderEnabled() {
