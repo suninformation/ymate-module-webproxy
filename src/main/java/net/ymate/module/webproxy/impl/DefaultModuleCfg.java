@@ -101,21 +101,21 @@ public class DefaultModuleCfg implements IWebProxyModuleCfg {
         __transferHeaderEnabled = BlurObject.bind(_moduleCfgs.get("transfer_header_enabled")).toBooleanValue();
         //
         if (__transferHeaderEnabled) {
-            String[] _filters = StringUtils.split(_moduleCfgs.get("transfer_header_whitelist"), "|");
+            String[] _filters = StringUtils.split(StringUtils.lowerCase(_moduleCfgs.get("transfer_header_whitelist")), "|");
             if (_filters != null && _filters.length > 0) {
                 __transferHeaderWhiteList = Arrays.asList(_filters);
             } else {
                 __transferHeaderWhiteList = Collections.emptyList();
             }
             //
-            _filters = StringUtils.split(_moduleCfgs.get("transfer_header_blacklist"), "|");
+            _filters = StringUtils.split(StringUtils.lowerCase(_moduleCfgs.get("transfer_header_blacklist")), "|");
             if (_filters != null && _filters.length > 0) {
                 __transferHeaderBlackList = Arrays.asList(_filters);
             } else {
                 __transferHeaderBlackList = Collections.emptyList();
             }
             //
-            _filters = StringUtils.split(_moduleCfgs.get("response_header_whitelist"), "|");
+            _filters = StringUtils.split(StringUtils.lowerCase(_moduleCfgs.get("response_header_whitelist")), "|");
             if (_filters != null && _filters.length > 0) {
                 __responseHeaderWhiteList = Arrays.asList(_filters);
             } else {
