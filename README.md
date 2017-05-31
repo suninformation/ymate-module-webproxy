@@ -1,4 +1,4 @@
-### WebProxy
+### YMP-WebProxy
 
 基于YMP框架实现的简单HTTP请求透传代理模块，用于将本地请求转发至远程服务器并返回远程服务的响应结果；
 
@@ -11,7 +11,7 @@
     </dependency>
 
 > **注**：
-> 本项目依赖 `ymate-framework-v2` 库，[请前往下载最新代码](https://github.com/suninformation/ymate-framework-v2) 
+> 本项目依赖 `ymate-framework-v2` 库，[请前往下载最新代码](http://git.oschina.net/suninformation/ymate-framework-v2) 
 
 #### 模块初始化
 
@@ -45,7 +45,7 @@
             </welcome-file-list>
         </web-app>
 
-### 模块配置参数说明
+#### 模块配置参数说明
 
     #-------------------------------------
     # module.webproxy 模块初始化参数
