@@ -10,9 +10,6 @@
         <version>1.0-SNAPSHOT</version>
     </dependency>
 
-> **注**：
-> 本项目依赖 `ymate-framework-v2` 库，[请前往下载最新代码](http://git.oschina.net/suninformation/ymate-framework-v2) 
-
 #### 模块初始化
 
 - 首先，你需要创建一个基于YMPv2框架的JavaWeb工程项目；（[如何快速搭建工程?](http://git.oschina.net/suninformation/ymate-platform-v2/wikis/Quickstart_New)）
